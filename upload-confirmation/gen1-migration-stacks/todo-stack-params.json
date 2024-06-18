@@ -1,0 +1,22 @@
+Key
+	
+Value
+	
+Resolved value
+
+Key
+	
+Value
+	
+Resolved value
+
+DynamoDBBillingMode	PAY_PER_REQUEST	-
+DynamoDBEnablePointInTimeRecovery	false	-
+DynamoDBEnableServerSideEncryption	false	-
+DynamoDBModelTableReadIOPS	5	-
+DynamoDBModelTableWriteIOPS	5	-
+referencetotransformerrootstackenv10C5A902Ref	dev	-
+referencetotransformerrootstackGraphQLAPI20497F53ApiId	kqgjsucy6bfcnfzvlyw5wkl35u	-
+referencetotransformerrootstackGraphQLAPINONEDS2BA9D1C8Name	NONE_DS	-
+referencetotransformerrootstackS3DeploymentBucket7592718ARef	amplify-amplifygen1app-dev-152457-deployment	-
+referencetotransformerrootstackS3DeploymentRootKeyA71EA735Ref	amplify-appsync-files/e711e7bba9f98673fae2fddbcf9b7836ee5d49af	-

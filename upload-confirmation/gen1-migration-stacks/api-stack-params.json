@@ -1,0 +1,22 @@
+Key
+	
+Value
+	
+Resolved value
+
+Key
+	
+Value
+	
+Resolved value
+
+AppSyncApiName	amplifygen1app	-
+AuthCognitoUserPoolId	us-east-1_9PgJcxthU	-
+DynamoDBBillingMode	PAY_PER_REQUEST	-
+DynamoDBEnablePointInTimeRecovery	false	-
+DynamoDBEnableServerSideEncryption	false	-
+DynamoDBModelTableReadIOPS	5	-
+DynamoDBModelTableWriteIOPS	5	-
+env	dev	-
+S3DeploymentBucket	amplify-amplifygen1app-dev-152457-deployment	-
+S3DeploymentRootKey	amplify-appsync-files/e711e7bba9f98673fae2fddbcf9b7836ee5d49af	-

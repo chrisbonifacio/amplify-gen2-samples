@@ -1,0 +1,48 @@
+Key
+	
+Value
+	
+Resolved value
+
+Key
+	
+Value
+	
+Resolved value
+
+aliasAttributes	-	-
+allowUnauthenticatedIdentities	false	-
+authRoleArn	arn:aws:iam::519537122948:role/amplify-amplifygen1app-dev-152457-authRole	-
+authSelections	identityPoolAndUserPool	-
+autoVerifiedAttributes	email	-
+breakCircularDependency	true	-
+defaultPasswordPolicy	false	-
+dependsOn	-	-
+emailVerificationMessage	Your verification code is {####}	-
+emailVerificationSubject	Your verification code	-
+env	dev	-
+identityPoolName	amplifygen1appa6ae5327_identitypool_a6ae5327	-
+mfaConfiguration	OFF	-
+mfaTypes	SMS Text Message	-
+passwordPolicyCharacters	-	-
+passwordPolicyMinLength	8	-
+requiredAttributes	email	-
+resourceName	amplifygen1appa6ae5327	-
+resourceNameTruncated	amplifa6ae5327	-
+serviceName	Cognito	-
+sharedId	a6ae5327	-
+smsAuthenticationMessage	Your authentication code is {####}	-
+smsVerificationMessage	Your verification code is {####}	-
+unauthRoleArn	arn:aws:iam::519537122948:role/amplify-amplifygen1app-dev-152457-unauthRole	-
+useDefault	default	-
+useEnabledMfas	true	-
+usernameAttributes	email	-
+usernameCaseSensitive	false	-
+userpoolClientGenerateSecret	false	-
+userpoolClientLambdaRole	amplifa6ae5327_userpoolclient_lambda_role	-
+userpoolClientReadAttributes	email	-
+userpoolClientRefreshTokenValidity	30	-
+userpoolClientSetAttributes	false	-
+userpoolClientWriteAttributes	email	-
+userPoolGroupList	-	-
+userPoolName	amplifygen1appa6ae5327_userpool_a6ae5327	-

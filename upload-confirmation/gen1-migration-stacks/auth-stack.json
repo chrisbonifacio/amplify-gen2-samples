@@ -1,0 +1,509 @@
+{
+  "Description": "{\"createdOn\":\"Mac\",\"createdBy\":\"Amplify\",\"createdWith\":\"12.10.1\",\"stackType\":\"auth-Cognito\",\"metadata\":{}}",
+  "AWSTemplateFormatVersion": "2010-09-09",
+  "Parameters": {
+    "env": {
+      "Type": "String"
+    },
+    "identityPoolName": {
+      "Type": "String"
+    },
+    "allowUnauthenticatedIdentities": {
+      "Type": "String"
+    },
+    "resourceNameTruncated": {
+      "Type": "String"
+    },
+    "userPoolName": {
+      "Type": "String"
+    },
+    "autoVerifiedAttributes": {
+      "Type": "CommaDelimitedList"
+    },
+    "mfaConfiguration": {
+      "Type": "String"
+    },
+    "mfaTypes": {
+      "Type": "CommaDelimitedList"
+    },
+    "smsAuthenticationMessage": {
+      "Type": "String"
+    },
+    "smsVerificationMessage": {
+      "Type": "String"
+    },
+    "emailVerificationSubject": {
+      "Type": "String"
+    },
+    "emailVerificationMessage": {
+      "Type": "String"
+    },
+    "defaultPasswordPolicy": {
+      "Type": "String"
+    },
+    "passwordPolicyMinLength": {
+      "Type": "String"
+    },
+    "passwordPolicyCharacters": {
+      "Type": "CommaDelimitedList"
+    },
+    "requiredAttributes": {
+      "Type": "CommaDelimitedList"
+    },
+    "aliasAttributes": {
+      "Type": "CommaDelimitedList"
+    },
+    "userpoolClientGenerateSecret": {
+      "Type": "String"
+    },
+    "userpoolClientRefreshTokenValidity": {
+      "Type": "String"
+    },
+    "userpoolClientWriteAttributes": {
+      "Type": "CommaDelimitedList"
+    },
+    "userpoolClientReadAttributes": {
+      "Type": "CommaDelimitedList"
+    },
+    "userpoolClientLambdaRole": {
+      "Type": "String"
+    },
+    "userpoolClientSetAttributes": {
+      "Type": "String"
+    },
+    "sharedId": {
+      "Type": "String"
+    },
+    "resourceName": {
+      "Type": "String"
+    },
+    "authSelections": {
+      "Type": "String"
+    },
+    "useDefault": {
+      "Type": "String"
+    },
+    "usernameAttributes": {
+      "Type": "CommaDelimitedList"
+    },
+    "userPoolGroupList": {
+      "Type": "CommaDelimitedList"
+    },
+    "serviceName": {
+      "Type": "String"
+    },
+    "usernameCaseSensitive": {
+      "Type": "String"
+    },
+    "useEnabledMfas": {
+      "Type": "String"
+    },
+    "authRoleArn": {
+      "Type": "String"
+    },
+    "unauthRoleArn": {
+      "Type": "String"
+    },
+    "breakCircularDependency": {
+      "Type": "String"
+    },
+    "dependsOn": {
+      "Type": "CommaDelimitedList"
+    }
+  },
+  "Conditions": {
+    "ShouldNotCreateEnvResources": {
+      "Fn::Equals": [
+        {
+          "Ref": "env"
+        },
+        "NONE"
+      ]
+    }
+  },
+  "Resources": {
+    "UserPool": {
+      "DeletionPolicy": "Retain",
+      "Type": "AWS::Cognito::UserPool",
+      "Properties": {
+        "AutoVerifiedAttributes": ["email"],
+        "EmailVerificationMessage": {
+          "Ref": "emailVerificationMessage"
+        },
+        "EmailVerificationSubject": {
+          "Ref": "emailVerificationSubject"
+        },
+        "MfaConfiguration": {
+          "Ref": "mfaConfiguration"
+        },
+        "Policies": {
+          "PasswordPolicy": {
+            "MinimumLength": {
+              "Ref": "passwordPolicyMinLength"
+            },
+            "RequireLowercase": false,
+            "RequireNumbers": false,
+            "RequireSymbols": false,
+            "RequireUppercase": false
+          }
+        },
+        "Schema": [
+          {
+            "Mutable": true,
+            "Name": "email",
+            "Required": true
+          }
+        ],
+        "UserAttributeUpdateSettings": {
+          "AttributesRequireVerificationBeforeUpdate": ["email"]
+        },
+        "UsernameAttributes": {
+          "Ref": "usernameAttributes"
+        },
+        "UsernameConfiguration": {
+          "CaseSensitive": false
+        },
+        "UserPoolName": {
+          "Fn::If": [
+            "ShouldNotCreateEnvResources",
+            {
+              "Ref": "userPoolName"
+            },
+            {
+              "Fn::Join": [
+                "",
+                [
+                  {
+                    "Ref": "userPoolName"
+                  },
+                  "-",
+                  {
+                    "Ref": "env"
+                  }
+                ]
+              ]
+            }
+          ]
+        }
+      },
+      "Metadata": {
+        "AWS::CloudFormation::Designer": {
+          "id": "318ef0bf-b401-4172-9690-713359fc740f"
+        }
+      }
+    },
+    "UserPoolClientWeb": {
+      "DeletionPolicy": "Retain",
+      "Type": "AWS::Cognito::UserPoolClient",
+      "Properties": {
+        "UserPoolId": {
+          "Ref": "UserPool"
+        },
+        "ClientName": "amplifa6ae5327_app_clientWeb",
+        "RefreshTokenValidity": {
+          "Ref": "userpoolClientRefreshTokenValidity"
+        },
+        "TokenValidityUnits": {
+          "RefreshToken": "days"
+        }
+      },
+      "DependsOn": ["UserPool"],
+      "Metadata": {
+        "AWS::CloudFormation::Designer": {
+          "id": "c7144d48-c023-4861-9dff-9d5f69261d55"
+        }
+      }
+    },
+    "UserPoolClient": {
+      "DeletionPolicy": "Retain",
+      "Type": "AWS::Cognito::UserPoolClient",
+      "Properties": {
+        "UserPoolId": {
+          "Ref": "UserPool"
+        },
+        "ClientName": "amplifa6ae5327_app_client",
+        "GenerateSecret": {
+          "Ref": "userpoolClientGenerateSecret"
+        },
+        "RefreshTokenValidity": {
+          "Ref": "userpoolClientRefreshTokenValidity"
+        },
+        "TokenValidityUnits": {
+          "RefreshToken": "days"
+        }
+      },
+      "DependsOn": ["UserPool"],
+      "Metadata": {
+        "AWS::CloudFormation::Designer": {
+          "id": "bbda7129-ccc6-4c9f-9b2d-b8db4c03b71e"
+        }
+      }
+    },
+    "UserPoolClientRole": {
+      "DeletionPolicy": "Retain",
+      "Type": "AWS::IAM::Role",
+      "Properties": {
+        "AssumeRolePolicyDocument": {
+          "Version": "2012-10-17",
+          "Statement": [
+            {
+              "Effect": "Allow",
+              "Principal": {
+                "Service": "lambda.amazonaws.com"
+              },
+              "Action": "sts:AssumeRole"
+            }
+          ]
+        },
+        "RoleName": {
+          "Fn::If": [
+            "ShouldNotCreateEnvResources",
+            {
+              "Ref": "userpoolClientLambdaRole"
+            },
+            {
+              "Fn::Join": [
+                "",
+                [
+                  "upClientLambdaRolea6ae5327",
+                  {
+                    "Fn::Select": [
+                      3,
+                      {
+                        "Fn::Split": [
+                          "-",
+                          {
+                            "Ref": "AWS::StackName"
+                          }
+                        ]
+                      }
+                    ]
+                  },
+                  "-",
+                  {
+                    "Ref": "env"
+                  }
+                ]
+              ]
+            }
+          ]
+        }
+      },
+      "Metadata": {
+        "AWS::CloudFormation::Designer": {
+          "id": "1f09fdef-eab7-46ff-a7d9-e8bbf4d8522b"
+        }
+      }
+    },
+    "IdentityPool": {
+      "DeletionPolicy": "Retain",
+      "Type": "AWS::Cognito::IdentityPool",
+      "Properties": {
+        "AllowUnauthenticatedIdentities": {
+          "Ref": "allowUnauthenticatedIdentities"
+        },
+        "CognitoIdentityProviders": [
+          {
+            "ClientId": {
+              "Ref": "UserPoolClient"
+            },
+            "ProviderName": {
+              "Fn::Sub": [
+                "cognito-idp.${region}.amazonaws.com/${client}",
+                {
+                  "region": {
+                    "Ref": "AWS::Region"
+                  },
+                  "client": {
+                    "Ref": "UserPool"
+                  }
+                }
+              ]
+            }
+          },
+          {
+            "ClientId": {
+              "Ref": "UserPoolClientWeb"
+            },
+            "ProviderName": {
+              "Fn::Sub": [
+                "cognito-idp.${region}.amazonaws.com/${client}",
+                {
+                  "region": {
+                    "Ref": "AWS::Region"
+                  },
+                  "client": {
+                    "Ref": "UserPool"
+                  }
+                }
+              ]
+            }
+          }
+        ],
+        "IdentityPoolName": {
+          "Fn::If": [
+            "ShouldNotCreateEnvResources",
+            "amplifygen1appa6ae5327_identitypool_a6ae5327",
+            {
+              "Fn::Join": [
+                "",
+                [
+                  "amplifygen1appa6ae5327_identitypool_a6ae5327__",
+                  {
+                    "Ref": "env"
+                  }
+                ]
+              ]
+            }
+          ]
+        }
+      },
+      "Metadata": {
+        "AWS::CloudFormation::Designer": {
+          "id": "47afe571-4b5a-46cb-935a-434cdf8323ec"
+        }
+      }
+    },
+    "IdentityPoolRoleMap": {
+      "DeletionPolicy": "Retain",
+      "Type": "AWS::Cognito::IdentityPoolRoleAttachment",
+      "Properties": {
+        "IdentityPoolId": {
+          "Ref": "IdentityPool"
+        },
+        "Roles": {
+          "unauthenticated": {
+            "Ref": "unauthRoleArn"
+          },
+          "authenticated": {
+            "Ref": "authRoleArn"
+          }
+        }
+      },
+      "DependsOn": ["IdentityPool"],
+      "Metadata": {
+        "AWS::CloudFormation::Designer": {
+          "id": "79970ad7-8713-4273-be3d-c88dcb2634bf"
+        }
+      }
+    }
+  },
+  "Outputs": {
+    "IdentityPoolId": {
+      "Description": "Id for the identity pool",
+      "Value": {
+        "Ref": "IdentityPool"
+      }
+    },
+    "IdentityPoolName": {
+      "Value": {
+        "Fn::GetAtt": ["IdentityPool", "Name"]
+      }
+    },
+    "UserPoolId": {
+      "Description": "Id for the user pool",
+      "Value": {
+        "Ref": "UserPool"
+      }
+    },
+    "UserPoolArn": {
+      "Description": "Arn for the user pool",
+      "Value": {
+        "Fn::GetAtt": ["UserPool", "Arn"]
+      }
+    },
+    "UserPoolName": {
+      "Value": {
+        "Ref": "userPoolName"
+      }
+    },
+    "AppClientIDWeb": {
+      "Description": "The user pool app client id for web",
+      "Value": {
+        "Ref": "UserPoolClientWeb"
+      }
+    },
+    "AppClientID": {
+      "Description": "The user pool app client id",
+      "Value": {
+        "Ref": "UserPoolClient"
+      }
+    }
+  },
+  "Metadata": {
+    "AWS::CloudFormation::Designer": {
+      "1f09fdef-eab7-46ff-a7d9-e8bbf4d8522b": {
+        "size": {
+          "width": 60,
+          "height": 60
+        },
+        "position": {
+          "x": 60,
+          "y": 90
+        },
+        "z": 1,
+        "embeds": []
+      },
+      "318ef0bf-b401-4172-9690-713359fc740f": {
+        "size": {
+          "width": 60,
+          "height": 60
+        },
+        "position": {
+          "x": 180,
+          "y": 90
+        },
+        "z": 1,
+        "embeds": []
+      },
+      "bbda7129-ccc6-4c9f-9b2d-b8db4c03b71e": {
+        "size": {
+          "width": 60,
+          "height": 60
+        },
+        "position": {
+          "x": 60,
+          "y": 210
+        },
+        "z": 1,
+        "embeds": []
+      },
+      "c7144d48-c023-4861-9dff-9d5f69261d55": {
+        "size": {
+          "width": 60,
+          "height": 60
+        },
+        "position": {
+          "x": 180,
+          "y": 210
+        },
+        "z": 1,
+        "embeds": []
+      },
+      "47afe571-4b5a-46cb-935a-434cdf8323ec": {
+        "size": {
+          "width": 60,
+          "height": 60
+        },
+        "position": {
+          "x": 300,
+          "y": 90
+        },
+        "z": 1,
+        "embeds": []
+      },
+      "79970ad7-8713-4273-be3d-c88dcb2634bf": {
+        "size": {
+          "width": 60,
+          "height": 60
+        },
+        "position": {
+          "x": 300,
+          "y": 210
+        },
+        "z": 1,
+        "embeds": []
+      }
+    }
+  }
+}

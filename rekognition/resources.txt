@@ -1,0 +1,14 @@
+user pool id
+us-east-1_9PgJcxthU
+
+client id
+5uqo9hqg2vnf1ksei7a893ikmv
+
+identity pool id
+us-east-1:004c0182-7da6-433b-9289-3c4a7dc638d0
+
+auth role name
+amplify-amplifygen1app-dev-152457-authRole
+
+unauth role name
+amplify-amplifygen1app-dev-152457-unauthRole

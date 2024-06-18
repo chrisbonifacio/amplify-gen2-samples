@@ -1,0 +1,166 @@
+{
+  "Description": "{\"createdOn\":\"Mac\",\"createdBy\":\"AmplifyPipelineDeploy\",\"createdWith\":\"0.5.6\",\"stackType\":\"auth-Cognito\",\"metadata\":{}}",
+  "Resources": {
+    "NullResource": {
+      "Type": "AWS::CloudFormation::WaitConditionHandle"
+    },
+    "amplifyAuthUserPool4BA7F805": {
+      "Type": "AWS::Cognito::UserPool",
+      "Properties": {
+        "AutoVerifiedAttributes": ["email"],
+        "EmailVerificationMessage": "Your verification code is {####}",
+        "EmailVerificationSubject": "Your verification code",
+        "MfaConfiguration": "OFF",
+        "Policies": {
+          "PasswordPolicy": {
+            "MinimumLength": 8,
+            "RequireLowercase": false,
+            "RequireNumbers": false,
+            "RequireSymbols": false,
+            "RequireUppercase": false
+          }
+        },
+        "Schema": [
+          {
+            "Mutable": true,
+            "Name": "email",
+            "Required": true
+          }
+        ],
+        "UserAttributeUpdateSettings": {
+          "AttributesRequireVerificationBeforeUpdate": ["email"]
+        },
+        "UsernameAttributes": ["email"],
+        "UsernameConfiguration": {
+          "CaseSensitive": false
+        }
+      },
+      "UpdateReplacePolicy": "Delete",
+      "DeletionPolicy": "Retain"
+    },
+    "amplifyAuthUserPoolAppClient2626C6F8": {
+      "Type": "AWS::Cognito::UserPoolClient",
+      "Properties": {
+        "UserPoolId": {
+          "Ref": "amplifyAuthUserPool4BA7F805"
+        },
+        "RefreshTokenValidity": 30,
+        "TokenValidityUnits": {
+          "RefreshToken": "days"
+        }
+      },
+      "DeletionPolicy": "Retain"
+    },
+    "amplifyAuthIdentityPool3FDE84CC": {
+      "Type": "AWS::Cognito::IdentityPool",
+      "Properties": {
+        "AllowUnauthenticatedIdentities": false,
+        "CognitoIdentityProviders": [
+          {
+            "ClientId": {
+              "Ref": "amplifyAuthUserPoolAppClient2626C6F8"
+            },
+            "ProviderName": {
+              "Fn::Sub": [
+                "cognito-idp.${region}.amazonaws.com/${client}",
+                {
+                  "region": {
+                    "Ref": "AWS::Region"
+                  },
+                  "client": {
+                    "Ref": "amplifyAuthUserPool4BA7F805"
+                  }
+                }
+              ]
+            }
+          }
+        ]
+      },
+      "DeletionPolicy": "Retain"
+    },
+    "amplifyAuthauthenticatedUserRoleD8DA3689": {
+      "Type": "AWS::IAM::Role",
+      "Properties": {
+        "AssumeRolePolicyDocument": {
+          "Version": "2012-10-17",
+          "Statement": [
+            {
+              "Sid": "",
+              "Effect": "Deny",
+              "Principal": {
+                "Federated": "cognito-identity.amazonaws.com"
+              },
+              "Action": "sts:AssumeRoleWithWebIdentity"
+            }
+          ]
+        }
+      },
+      "DeletionPolicy": "Retain"
+    },
+    "amplifyAuthunauthenticatedUserRole2B524D9E": {
+      "Type": "AWS::IAM::Role",
+      "Properties": {
+        "AssumeRolePolicyDocument": {
+          "Version": "2012-10-17",
+          "Statement": [
+            {
+              "Sid": "",
+              "Effect": "Deny",
+              "Principal": {
+                "Federated": "cognito-identity.amazonaws.com"
+              },
+              "Action": "sts:AssumeRoleWithWebIdentity"
+            }
+          ]
+        }
+      },
+      "DeletionPolicy": "Retain"
+    },
+    "amplifyAuthIdentityPoolRoleAttachment045F17C8": {
+      "Type": "AWS::Cognito::IdentityPoolRoleAttachment",
+      "Properties": {
+        "IdentityPoolId": {
+          "Ref": "amplifyAuthIdentityPool3FDE84CC"
+        },
+        "RoleMappings": {
+          "UserPoolWebClientRoleMapping": {
+            "AmbiguousRoleResolution": "AuthenticatedRole",
+            "IdentityProvider": {
+              "Fn::Join": [
+                "",
+                [
+                  "cognito-idp.",
+                  {
+                    "Ref": "AWS::Region"
+                  },
+                  ".amazonaws.com/",
+                  {
+                    "Ref": "amplifyAuthUserPool4BA7F805"
+                  },
+                  ":",
+                  {
+                    "Ref": "amplifyAuthUserPoolAppClient2626C6F8"
+                  }
+                ]
+              ]
+            },
+            "Type": "Token"
+          }
+        },
+        "Roles": {
+          "unauthenticated": {
+            "Fn::GetAtt": ["amplifyAuthunauthenticatedUserRole2B524D9E", "Arn"]
+          },
+          "authenticated": {
+            "Fn::GetAtt": ["amplifyAuthauthenticatedUserRoleD8DA3689", "Arn"]
+          }
+        }
+      },
+      "DependsOn": [
+        "amplifyAuthIdentityPool3FDE84CC",
+        "amplifyAuthUserPoolAppClient2626C6F8"
+      ],
+      "DeletionPolicy": "Retain"
+    }
+  }
+}
