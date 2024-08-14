@@ -1,39 +1,103 @@
 "use client";
 
-import { Amplify } from "aws-amplify";
-import aws_outputs from "@/amplify_outputs.json";
-import { generateClient } from "aws-amplify/api";
-import { Schema } from "@/amplify/data/resource";
 import { useEffect, useState } from "react";
 
-Amplify.configure({ ...aws_outputs });
+import "aws-amplify/auth/enable-oauth-listener";
+import {
+  AuthUser,
+  fetchAuthSession,
+  fetchUserAttributes,
+  getCurrentUser,
+  signInWithRedirect,
+} from "aws-amplify/auth";
+import { Schema } from "@/amplify/data/resource";
+import { generateClient } from "aws-amplify/api";
+import { Hub } from "aws-amplify/utils";
 
-const client = generateClient<Schema>();
+const client = generateClient<Schema>({ authMode: "userPool" });
 
-type Post = Schema["posts"]["type"];
+// type Notification = Schema["notifications"]["type"];
 
-export default function Home() {
-  const [posts, setPosts] = useState<Post[]>();
+function Home() {
+  const [user, setUser] = useState<AuthUser>();
+  const [notification, setNotification] = useState();
 
-  const getPosts = async () => {
-    const { data } = await client.models.posts.list();
+  const createNotification = async () => {
+    const { data, errors } = await client.models.Run.create({
+      trigger: "test",
+    });
 
     console.log(data);
   };
 
+  const authenticate = async () => {
+    try {
+      await fetchAuthSession();
+      const user = await getCurrentUser();
+
+      setUser(user);
+    } catch (error) {
+      signInWithRedirect({
+        provider: {
+          custom: "Auth0SAML",
+        },
+      });
+    }
+  };
+
   useEffect(() => {
-    getPosts();
+    authenticate();
+  }, []);
+
+  useEffect(() => {
+    const subToNotifications = client.subscriptions
+      .subscribeToNotificationsByUserId({
+        userId: user?.userId ?? "",
+      })
+      .subscribe({
+        next: (data) => {
+          setNotification(data);
+        },
+        error: (error) => console.error(error),
+      });
+
+    return () => subToNotifications.unsubscribe();
+  }, [user]);
+
+  useEffect(() => {
+    const hubsub = Hub.listen("auth", async ({ payload }) => {
+      switch (payload.event) {
+        case "signInWithRedirect":
+          const user = await getCurrentUser();
+          const userAttributes = await fetchUserAttributes();
+          console.log({ user, userAttributes });
+          setUser(user);
+          break;
+        case "signInWithRedirect_failure":
+          // handle sign in failure
+          console.log(payload.event);
+          break;
+        case "customOAuthState":
+          const state = payload.data; // this will be customState provided on signInWithRedirect function
+          console.log(state);
+          break;
+      }
+    });
+
+    return () => hubsub();
   }, []);
 
   return (
     <main className="flex min-h-screen flex-col items-center justify-between p-24">
-      <button onClick={getPosts}>List Posts</button>
-
-      <div>
-        {posts?.map((post) => (
-          <div key={post.id}>{post.title}</div>
-        ))}
-      </div>
+      {user ? (
+        <>
+          Welcome, {user?.username}
+          <button onClick={createNotification}>Create Notification</button>
+          <div>{notification?.message}</div>
+        </>
+      ) : null}
     </main>
   );
 }
+
+export default Home;

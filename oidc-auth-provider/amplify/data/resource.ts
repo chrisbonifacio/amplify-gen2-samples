@@ -7,6 +7,7 @@ const schema = a.schema({
       content: a.string(),
     })
     .authorization((allow) => [allow.authenticated("oidc")]),
+    
 });
 
 // Use the a.combine() operator to stitch together the models backed by DynamoDB

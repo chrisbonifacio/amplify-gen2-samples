@@ -7,8 +7,8 @@ export function request() {
 
 export function response(ctx) {
   const filter = {
-    owner: {
-      eq: `${ctx.identity.sub}::${ctx.identity.username}`,
+    user_id: {
+      eq: ctx.args.userId,
     },
   };
 

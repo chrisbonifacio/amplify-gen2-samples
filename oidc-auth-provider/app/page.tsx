@@ -12,13 +12,24 @@ import { TokenProvider, decodeJWT } from "aws-amplify/auth";
 import { useAuth0 } from "@auth0/auth0-react";
 import { useEffect, useState } from "react";
 
+const client = generateClient<Schema>();
+
 function ProfileClient() {
-  const [client, setClient] = useState<any>(null);
-  const { getAccessTokenSilently, getIdTokenClaims } = useAuth0();
+  const {
+    isLoading,
+    isAuthenticated,
+    error,
+    user,
+    logout,
+    loginWithRedirect,
+    getAccessTokenSilently,
+    getIdTokenClaims,
+  } = useAuth0();
   const [todos, setTodos] = useState<Schema["Todo"]["type"][]>([]);
 
   const listTodos = async () => {
-    const { data, errors } = await client?.models?.Todo.list();
+    const { data, errors } = await client.models.Todo.list();
+
     setTodos(data);
   };
 
@@ -48,32 +59,41 @@ function ProfileClient() {
         tokenProvider: myTokenProvider,
       },
     });
-
-    if (!client) {
-      setClient(generateClient<Schema>());
-    }
   }, []);
 
-  return (
-    <div>
-      <a id="login" className="mr-4" href="/api/auth/login">
-        Login
-      </a>
-      <a id="logout" href="/api/auth/logout">
-        Logout
-      </a>
-      <button onClick={listTodos}>List Todos</button>
-      <div>
-        {todos.map((todo) => {
-          return (
-            <div key={todo.id}>
-              <p>{todo.content}</p>
-            </div>
-          );
-        })}
+  if (isLoading) {
+    return <div>Loading...</div>;
+  }
+  if (error) {
+    return <div>Oops... {error.message}</div>;
+  }
+
+  if (isAuthenticated) {
+    return (
+      <div className="flex flex-col">
+        <div>Hello {user?.name} </div>
+        <div>
+          <button
+            onClick={() =>
+              logout({ logoutParams: { returnTo: window.location.origin } })
+            }
+          >
+            Log out
+          </button>
+        </div>
+        <div>
+          <button onClick={listTodos}>Get Todos</button>
+        </div>
+        <div>
+          {todos.map((todo) => (
+            <div key={todo.id}>{todo.content}</div>
+          ))}
+        </div>
       </div>
-    </div>
-  );
+    );
+  } else {
+    return <button onClick={() => loginWithRedirect()}>Log in</button>;
+  }
 }
 
 export default ProfileClient;

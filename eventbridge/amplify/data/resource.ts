@@ -10,6 +10,7 @@ const schema = a.schema({
   OrderStatus: a.enum(["PENDING", "SHIPPED", "DELIVERED"]),
   OrderStatusChange: a.customType({
     orderId: a.id(),
+    owner: a.string(),
     status: a.ref("OrderStatus"),
     message: a.string(),
   }),

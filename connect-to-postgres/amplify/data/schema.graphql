@@ -1,7 +1,0 @@
-type Todo
-  @model
-  @auth(rules: [{ allow: public, provider: iam, operations: [create, read] }]) {
-  id: ID!
-  content: String
-  isDone: Boolean
-}

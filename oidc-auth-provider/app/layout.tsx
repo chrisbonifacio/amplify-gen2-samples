@@ -13,6 +13,9 @@ export default function RootLayout({
       <Auth0Provider
         clientId={process.env.NEXT_PUBLIC_AUTH0_CLIENT_ID as string}
         domain={process.env.NEXT_PUBLIC_AUTH0_DOMAIN as string}
+        authorizationParams={{
+          redirect_uri: window.location.origin,
+        }}
       >
         <body>{children}</body>
       </Auth0Provider>
