@@ -9,7 +9,7 @@ Amplify.configure(
   {
     API: {
       GraphQL: {
-        endpoint: env.AMPLIFY_DATA_GRAPHQL_ENDPOINT as string, // replace with your defineData name
+        endpoint: env.AMPLIFY_AUTH_USERPOOL_ID as string, // replace with your defineData name
         region: env.AWS_REGION as string,
         defaultAuthMode: "identityPool",
       },
