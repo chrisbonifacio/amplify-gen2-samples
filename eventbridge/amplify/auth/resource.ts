@@ -1,4 +1,4 @@
-import { defineAuth, defineFunction } from "@aws-amplify/backend";
+import { defineAuth } from "@aws-amplify/backend";
 
 // export const preTokenGeneration = defineFunction({
 //   entry: "pre-token-generation.ts",

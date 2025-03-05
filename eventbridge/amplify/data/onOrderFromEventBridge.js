@@ -1,18 +1,21 @@
-import { util, extensions } from "@aws-appsync/utils";
-
-// Subscription handlers must return a `null` payload on the request
-export function request() {
-  return { payload: null };
+export function request(ctx) {
+  return {
+    payload: {
+      status: ctx.arguments?.status || "PENDING",
+      message: ctx.arguments?.message || "",
+      customerId: ctx.arguments?.customerId || "",
+    },
+  };
 }
 
 export function response(ctx) {
-  const filter = {
-    owner: {
-      eq: `${ctx.identity.sub}::${ctx.identity.username}`,
-    },
+  // Ensure we have valid data
+  const data = ctx.result || ctx.prev.result || ctx.arguments || {};
+
+  // Return with default values if any field is missing
+  return {
+    status: data.status || "PENDING",
+    message: data.message || "",
+    customerId: data.customerId || "",
   };
-
-  extensions.setSubscriptionFilter(util.transform.toSubscriptionFilter(filter));
-
-  return null;
 }

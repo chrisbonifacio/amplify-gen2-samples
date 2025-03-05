@@ -1,74 +1,70 @@
-import { defineBackend } from "@aws-amplify/backend";
+import {
+  defineBackend,
+  defineFunction,
+  defineStorage,
+} from "@aws-amplify/backend";
 import { auth } from "./auth/resource";
 import { data } from "./data/resource";
 import { aws_events } from "aws-cdk-lib";
-import { aws_iam } from "aws-cdk-lib";
-import { publishOrderFromEventBridge } from "./data/graphql/mutations";
+import {
+  Effect,
+  PolicyDocument,
+  PolicyStatement,
+  Role,
+  ServicePrincipal,
+} from "aws-cdk-lib/aws-iam";
 
-export const backend = defineBackend({
+const backend = defineBackend({
   auth,
   data,
 });
 
-const apiStack = backend.createStack("MyLibraryStack");
-
+// Create a new stack for the EventBridge data source
 const eventStack = backend.createStack("MyExternalDataSources");
 
+// Reference or create an EventBridge EventBus
 const eventBus = aws_events.EventBus.fromEventBusName(
   eventStack,
   "MyEventBus",
   "default"
 );
 
-backend.data.addEventBridgeDataSource("EventBridgeDataSource", eventBus);
+// Add the EventBridge data source
+backend.data.addEventBridgeDataSource("MyEventBridgeDataSource", eventBus);
 
-const cloudWatchLogsRole = new aws_iam.Role(
-  apiStack,
-  "MyLibraryCloudWatchRole",
-  {
-    roleName: "MyLibraryCloudWatchRole",
-    assumedBy: new aws_iam.ServicePrincipal("appsync.amazonaws.com"),
-    managedPolicies: [
-      aws_iam.ManagedPolicy.fromAwsManagedPolicyName(
-        "service-role/AWSAppSyncPushToCloudWatchLogs"
-      ),
-    ],
-  }
-);
-
-backend.data.resources.cfnResources.cfnGraphqlApi.logConfig = {
-  cloudWatchLogsRoleArn: cloudWatchLogsRole.roleArn,
-  fieldLogLevel: "ALL",
-  excludeVerboseContent: false,
-};
-
-// Create the Policy Statement
-const policyStatement = new aws_iam.PolicyStatement({
-  effect: aws_iam.Effect.ALLOW,
+// Create a policy statement to allow invoking the AppSync API's mutations
+const policyStatement = new PolicyStatement({
+  effect: Effect.ALLOW,
   actions: ["appsync:GraphQL"],
   resources: [`${backend.data.resources.graphqlApi.arn}/types/Mutation/*`],
 });
 
-// Create the Role and attach the policy
-const eventBusRole = new aws_iam.Role(eventStack, "AppSyncInvokeRole", {
-  assumedBy: new aws_iam.ServicePrincipal("events.amazonaws.com"),
+// Create a role for the EventBus to assume
+const eventBusRole = new Role(eventStack, "AppSyncInvokeRole", {
+  assumedBy: new ServicePrincipal("events.amazonaws.com"),
   inlinePolicies: {
-    PolicyStatement: new aws_iam.PolicyDocument({
+    PolicyStatement: new PolicyDocument({
       statements: [policyStatement],
     }),
   },
 });
 
+// Create an EventBridge rule to route events to the AppSync API
 const rule = new aws_events.CfnRule(eventStack, "MyOrderRule", {
   eventBusName: eventBus.eventBusName,
   name: "broadcastOrderStatusChange",
   eventPattern: {
     source: ["amplify.orders"],
+    /* The shape of the event pattern must match EventBridge's event message structure.
+    So, this field must be spelled as "detail-type". Otherwise, events will not trigger the rule.
+
+    https://docs.aws.amazon.com/AmazonS3/latest/userguide/ev-events.html
+    */
     ["detail-type"]: ["OrderStatusChange"],
     detail: {
-      orderId: [{ exists: true }],
       status: ["PENDING", "SHIPPED", "DELIVERED"],
       message: [{ exists: true }],
+      customerId: [{ exists: true }],
     },
   },
   targets: [
@@ -78,18 +74,29 @@ const rule = new aws_events.CfnRule(eventStack, "MyOrderRule", {
         .attrGraphQlEndpointArn,
       roleArn: eventBusRole.roleArn,
       appSyncParameters: {
-        graphQlOperation: publishOrderFromEventBridge,
+        graphQlOperation: `
+        mutation PublishOrderFromEventBridge(
+          $status: String!
+          $message: String!
+          $customerId: String!
+        ) {
+          publishOrderFromEventBridge(status: $status, message: $message, customerId: $customerId) {
+            status
+            message
+            customerId
+          }
+        }`,
       },
       inputTransformer: {
         inputPathsMap: {
-          orderId: "$.detail.orderId",
           status: "$.detail.status",
           message: "$.detail.message",
+          customerId: "$.detail.customerId",
         },
         inputTemplate: JSON.stringify({
-          orderId: "<orderId>",
           status: "<status>",
           message: "<message>",
+          customerId: "<customerId>",
         }),
       },
     },

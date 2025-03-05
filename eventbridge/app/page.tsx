@@ -7,15 +7,22 @@ import {
 } from "@aws-amplify/ui-react";
 import "@aws-amplify/ui-react/styles.css";
 import { useEffect } from "react";
+import { fetchAuthSession } from "aws-amplify/auth";
 
 const client = generateClient<Schema>();
 
 function Home({ signOut }: WithAuthenticatorProps) {
   const publishToEventBridge = async () => {
+    const userId = (await fetchAuthSession()).userSub;
+
+    if (!userId) {
+      throw new Error("User ID not found");
+    }
+
     await client.mutations.publishOrderToEventBridge({
-      orderId: "123",
       status: "SHIPPED",
       message: "Order has been shipped",
+      customerId: userId,
     });
   };
 

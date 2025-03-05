@@ -1,48 +1,45 @@
 import { type ClientSchema, a, defineData } from "@aws-amplify/backend";
 
 const schema = a.schema({
-  Todo: a
-    .model({
-      content: a.string(),
-      isDone: a.boolean(),
-    })
-    .authorization((allow) => [allow.publicApiKey()]),
   OrderStatus: a.enum(["PENDING", "SHIPPED", "DELIVERED"]),
-  OrderStatusChange: a.customType({
-    orderId: a.id(),
-    owner: a.string(),
-    status: a.ref("OrderStatus"),
-    message: a.string(),
-  }),
+  OrderStatusChange: a
+    .model({
+      status: a.ref("OrderStatus").required(),
+      message: a.string().required(),
+      customerId: a.string().required(),
+    })
+    .authorization((allow) => [
+      allow.ownerDefinedIn("customerId", "userPools"),
+    ]),
   publishOrderToEventBridge: a
     .mutation()
     .arguments({
-      orderId: a.id(),
-      status: a.string(),
-      message: a.string(),
+      status: a.string().required(),
+      message: a.string().required(),
+      customerId: a.string().required(),
     })
     .returns(a.ref("OrderStatusChange"))
     .authorization((allow) => [allow.authenticated()])
     .handler(
       a.handler.custom({
-        dataSource: "EventBridgeDataSource",
+        dataSource: "MyEventBridgeDataSource",
         entry: "./publishOrderToEventBridge.js",
       })
     ),
   publishOrderFromEventBridge: a
     .mutation()
     .arguments({
-      orderId: a.id(),
-      status: a.string(),
-      message: a.string(),
+      status: a.string().required(),
+      message: a.string().required(),
+      customerId: a.string().required(),
     })
     .returns(a.ref("OrderStatusChange"))
-    .authorization((allow) => [allow.authenticated()])
     .handler(
       a.handler.custom({
         entry: "./publishOrderFromEventBridge.js",
       })
-    ),
+    )
+    .authorization((allow) => [allow.authenticated()]),
   onOrderFromEventBridge: a
     .subscription()
     .for(a.ref("publishOrderFromEventBridge"))
@@ -52,25 +49,15 @@ const schema = a.schema({
         entry: "./onOrderFromEventBridge.js",
       })
     ),
-  // We need at least one query in the schema to deploy the API
-  noop: a
-    .query()
-    .returns(a.string())
-    .authorization((allow) => [allow.publicApiKey()])
-    .handler(
-      a.handler.custom({
-        entry: "./noop.js",
-      })
-    ),
 });
 
 export type Schema = ClientSchema<typeof schema>;
 
 export const data = defineData({
   schema,
-  name: "MyLibrary",
+  name: "AmplifyGen2EventBridgeExample",
   authorizationModes: {
-    defaultAuthorizationMode: "apiKey",
+    defaultAuthorizationMode: "userPool",
     apiKeyAuthorizationMode: {
       expiresInDays: 30,
     },
