@@ -42,6 +42,9 @@ const schema = a.schema({
     .authorization((allow) => [allow.authenticated()]),
   onOrderFromEventBridge: a
     .subscription()
+    .arguments({
+      customerId: a.string().required(),
+    })
     .for(a.ref("publishOrderFromEventBridge"))
     .authorization((allow) => [allow.authenticated()])
     .handler(
