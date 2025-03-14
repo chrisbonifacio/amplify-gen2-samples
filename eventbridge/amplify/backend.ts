@@ -1,8 +1,4 @@
-import {
-  defineBackend,
-  defineFunction,
-  defineStorage,
-} from "@aws-amplify/backend";
+import { defineBackend } from "@aws-amplify/backend";
 import { auth } from "./auth/resource";
 import { data } from "./data/resource";
 import { aws_events } from "aws-cdk-lib";
@@ -52,7 +48,7 @@ const eventBusRole = new Role(eventStack, "AppSyncInvokeRole", {
 // Create an EventBridge rule to route events to the AppSync API
 const rule = new aws_events.CfnRule(eventStack, "MyOrderStatusChangeRule", {
   eventBusName: eventBus.eventBusName,
-  name: "broadcastOrderStatusChange",
+  name: "myBroadcastOrderStatusChange",
   eventPattern: {
     source: ["amplify.orders"],
     /* The shape of the event pattern must match EventBridge's event message structure.
