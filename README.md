@@ -45,8 +45,7 @@ This repository includes the following sample applications, each demonstrating s
 ### Prerequisites
 
 - [Node.js](https://nodejs.org/en/) (v18 or later)
-- [AWS Account](https://aws.amazon.com/account/)
-- [AWS CLI](https://aws.amazon.com/cli/) (configured with appropriate credentials)
+- [AWS Account](https://docs.amplify.aws/react/start/account-setup/)
 - [Amplify CLI Gen 2](https://docs.amplify.aws/gen2/start/installation/)
 
 ### Installation and Setup
